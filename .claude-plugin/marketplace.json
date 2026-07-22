@@ -1,0 +1,12 @@
+{
+  "name": "jay-flow-cc",
+  "owner": { "name": "pdev-jay" },
+  "description": "jay-flow — 대화형 plan → task build → plan 대조 review 루프 플러그인.",
+  "plugins": [
+    {
+      "name": "jay-flow",
+      "source": "./",
+      "description": "대화로 plan을 완성하고, task로 나눠 오라클 green까지 구현하고, plan과 대조해 리뷰하는 경량 개발 루프."
+    }
+  ]
+}
