@@ -39,7 +39,7 @@ CIDD 실측에서 살아남은 것만 남겼다:
 
 ```bash
 # GitHub — 이 repo가 자체 마켓플레이스를 포함한다
-/plugin marketplace add pdev-jay/jay-flow-cc
+/plugin marketplace add pdev-jay/jay-flow
 /plugin install jay-flow@jay-flow-cc
 /reload-plugins
 
