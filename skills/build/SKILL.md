@@ -1,6 +1,6 @@
 ---
 name: build
-description: 승인된 plan(`.plans/<slug>/` 최신 버전)의 task를 구현한다. 구현은 전부 builder(sonnet) — 공유분 순차, 파일 안 겹치는 독립 task는 병렬 fan-out. 오라클 green(repair 캡 3회, 초과 시 메인이 직접 에스컬레이션), drift 판정은 메인이. "구현해줘 / 빌드하자 / plan대로 진행해" 류 요청에 사용.
+description: 승인된 plan(`.plans/<slug>/` 최신 버전)의 task를 구현한다. 구현은 전부 builder(sonnet) — 공유분 순차, 파일 안 겹치는 독립 task는 병렬 fan-out. 오라클 green(repair 캡 3회, 초과 시 메인이 직접 에스컬레이션), drift 판정은 메인이, 전체 green 후 단순화 pass(우발적 복잡도 제거, 동작·계약 불변). "구현해줘 / 빌드하자 / plan대로 진행해" 류 요청에 사용.
 ---
 
 # jay-flow: build
@@ -29,7 +29,12 @@ description: 승인된 plan(`.plans/<slug>/` 최신 버전)의 task를 구현한
      - **고위험 표면 확인**: auth·권한·schema/persistence·public API·billing·concurrency·외부 I/O를 건드렸으면 변경 라인이 테스트에 닿는지 확인. 안 닿으면 해당 라인을 명시해 보고("low-risk"로 뭉개고 자가 통과 금지).
    - 체크박스 갱신 — **최신 버전 파일에 in-place**(실행 상태는 버전 사유가 아니다).
 
-5. **마무리.** 전체 오라클 1회 실행(병렬 결과 통합 후 필수 — task별 green ≠ 전체 green이고, **병렬 task는 task-scoped 검증만 거쳤으므로 여기가 전체 스위트의 유일한 게이트다**) → 요약 보고: 무엇을 구현 / 오라클 결과(실제 출력 근거) / plan 이탈 여부 / 미해결. 이어서 review로.
+5. **단순화 pass (전체 green 후, review 전 — 메인이 한다).** 통합 오라클이 green이면 consolidated diff를 훑어 **우발적 복잡도만** 수정한다 — 줄일 수 있는데 안 줄인 것: 불필요한 추상, 중복, 과잉 방어, 죽은 분기, 장황한 구현.
+   - **동작·계약 불변이 조건.** 공개 시그니처·스키마·직렬화 포맷을 바꾸는 단순화는 여기서 금지 — 그건 plan 수정(새 버전) 사안이다. "단순화"가 이탈의 면죄부가 되면 안 된다.
+   - 수정 후 **전체 오라클 재실행** — red면 단순화를 되돌린다.
+   - **없으면 없다고 넘어간다** — 억지 리팩토링 금지.
+
+6. **마무리.** 전체 오라클 1회 실행(병렬 결과 통합 후 필수 — task별 green ≠ 전체 green이고, **병렬 task는 task-scoped 검증만 거쳤으므로 여기가 전체 스위트의 유일한 게이트다**; 단순화 pass에서 이미 돌렸으면 그 결과로 갈음) → 요약 보고: 무엇을 구현 / 오라클 결과(실제 출력 근거) / plan 이탈 여부 / 단순화 적용 내역 / 미해결. 이어서 review로.
 
 ## 원칙
 

@@ -19,7 +19,8 @@ CIDD 실측에서 살아남은 것만 남겼다:
               │ 승인 → task 분해 → .plans/<slug>/v1.md (내용 변경 시 v2, v3…)
               ▼
          build (구현은 전부 builder(sonnet): 공유분 순차 → 독립분 병렬 →
-                오라클 green → 메인이 drift 판정, 막히면 메인 에스컬레이션)
+                오라클 green → 메인이 drift 판정, 막히면 메인 에스컬레이션
+                → 전체 green 후 단순화 pass: 우발적 복잡도 제거, 동작·계약 불변)
               ▼
          review (오라클 → diff vs plan → 잠재 에러 재검 → advisory)
               │ 사용자 accept
@@ -32,7 +33,7 @@ CIDD 실측에서 살아남은 것만 남겼다:
 | 스킬 | 하는 일 |
 |---|---|
 | `jay-flow:plan` | 대화로 plan 완성(상시 5축 + 조건부 축 + 미해결·전제 + self-check + 사용자 반복), 승인 시 task 분해·저장 |
-| `jay-flow:build` | 구현은 전부 `builder`(sonnet) — 공유분 순차·독립분 병렬, 오라클 green(캡 3, 초과 시 메인 에스컬레이션), 판정은 메인 |
+| `jay-flow:build` | 구현은 전부 `builder`(sonnet) — 공유분 순차·독립분 병렬, 오라클 green(캡 3, 초과 시 메인 에스컬레이션), 판정은 메인, 전체 green 후 단순화 pass(동작·계약 불변) |
 | `jay-flow:review` | 전체 오라클 → diff vs plan → 잠재 에러 축 재검, advisory 보고, accept 시 done |
 
 ## 설치
