@@ -1,7 +1,7 @@
 {
   "name": "jay-flow",
   "displayName": "jay-flow",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "대화로 plan을 완성하고(상시 5축: 구조·의존성·영향 범위·잠재 에러·범위 + 조건부 축), task로 나눠 구현하고(오라클 green + plan 재주입), plan과 대조해 리뷰하는 plan→build→review→done 루프. lens fan-out 없음(사용자가 마찰 소스), 구현은 독립 task 병렬 fan-out(builder=sonnet, 판정은 메인).",
   "author": { "name": "pdev-jay" },
   "keywords": ["planning", "workflow", "oracle", "plan-build-review"]
