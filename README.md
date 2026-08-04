@@ -6,7 +6,7 @@ plan → build → review → done. 대화로 plan을 완성하고, task로 나�
 
 CIDD 실측에서 살아남은 것만 남겼다:
 
-- **lens fan-out은 버리고, 구현 fan-out은 쓴다.** 검사 축은 체크리스트로 메인이 직접 채운다 — 상시 5(구조·의존성·영향 범위·잠재 에러·범위) + 조건부 4(보안·롤백/마이그레이션·성능/비용·테스트 가능성, 트리거될 때만). lens 서브에이전트 없음 — **사용자의 수정 지시가 마찰 소스**다. (실측: 강한 모델 + 적극적 사용자 반복이면 lens fan-out 한계효용 ~0; 반면 파일이 겹치지 않는 독립 task의 병렬 구현은 순수 wall-clock 이득.) 체크리스트는 사용자가 대충 보는 날의 바닥.
+- **lens fan-out은 버리고, 구현 fan-out은 쓴다.** 검사 축은 체크리스트로 메인이 직접 채운다 — 상시 5(구조·의존성·영향 범위·잠재 에러·범위) + 조건부 4(보안·롤백/마이그레이션·성능/비용·테스트 가능성, 트리거될 때만). lens 서브에이전트 없음 — **사용자의 수정 지시가 마찰 소스**다. (실측: 강한 모델 + 적극적 사용자 반복이면 lens fan-out 한계효용 ~0; 반면 파일이 겹치지 않는 독립 task의 병렬 구현은 순수 wall-clock 이득.) 체크리스트는 사용자가 대충 보는 날의 바닥. 예외 하나: review의 diff 자체 검토만 fresh-context `reviewer` **하나**에 위임한다 — 축을 흩는 fan-out이 아니라 컨텍스트 위생(빌드 잔해 없는 눈)이고, 모델은 세션 모델 그대로다.
 - **모델 배치 = 3슬롯.** 추론·판정(plan 완성, drift 판정, review)은 **메인 세션 = 상위 모델**, 구현은 **순차·병렬 불문 `jay-flow:builder` = sonnet**(예외: 자명한 초소형 task와 에스컬레이션만 메인 직접). builder가 repair 캡을 소진하면 **메인이 직접**(그게 모델 에스컬레이션). 메인이 구현을 안 하는 이유는 단가만이 아니라 컨텍스트 위생 — 구현 잔해가 차면 판정 품질이 떨어진다. plan·review의 모델은 플러그인이 못 박는다 — **세션을 상위 모델로 돌리는 것이 사용법**이다.
 - **검증 바닥은 오라클.** test/type/build green이 완료 기준. 자기보고는 증거가 아니다. 고위험 표면(auth·schema·billing·concurrency·외부 I/O)은 변경 라인의 테스트 도달까지 확인.
 - **plan 재주입.** task마다 해당 plan slice를 다시 읽고 시작한다. (실측: 에이전트는 plan에서 표류하고, 주기적 재주입이 위반을 줄인다.)
@@ -34,8 +34,8 @@ CIDD 실측에서 살아남은 것만 남겼다:
 | 스킬 | 하는 일 |
 |---|---|
 | `jay-flow:plan` | 대화로 plan 완성(상시 5축 + 조건부 축 + 미해결·전제 + self-check + 사용자 반복), 승인 시 task 분해·저장 |
-| `jay-flow:build` | 구현은 전부 `builder`(sonnet) — 공유분 순차·독립분 병렬, 오라클 green(캡 3, 초과 시 메인 에스컬레이션), 판정은 메인, 전체 green 후 단순화 pass(동작·계약 불변) |
-| `jay-flow:review` | 전체 오라클 → diff vs plan → 잠재 에러 축 재검, advisory 보고, accept 시 done |
+| `jay-flow:build` | 구현은 전부 `builder`(sonnet) — 공유분 순차·독립분 병렬, 오라클 green(캡 3, 초과 시 메인 에스컬레이션), 판정은 메인, task green마다 체크포인트 커밋, 통합 red는 귀속→repair 사다리, 전체 green 후 단순화 pass(동작·계약 불변) |
+| `jay-flow:review` | 전체 오라클 → diff vs plan → diff 자체 검토는 fresh-context `reviewer`(세션 모델) 위임, advisory 보고, accept 시 done |
 
 ## 설치
 
