@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-unverified-code-facts
+description: >-
+  기능류(업로드 경로 마이그레이션) 안건. 영향 범위를 Grep 실측으로 채우는지 — 구 API에 걸린 legacy 테스트, config.toml 모듈 등록·loader — 그리고 docstring과 사용자 말이 "사용 중"이라 하는 참조 0 모듈(profile_cache)을 실측으로 정정하는지를 잰다.
+tags: [plan, hard]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh

@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-deferred-scope
+description: >-
+  기능류 안건(다중 등록)에 사용자가 "edit는 나중에"라고 덧붙인다. 범위 축에서 edit가 사용자 도달 가능한 silent fail(업로드 없이 saved 보고)임을 지적하고 guard/포함/사용자 판정 중 하나를 택해 기록하는지, 주석·"추후" 한 줄로 미루는지를 잰다.
+tags: [plan, hard]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh

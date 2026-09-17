@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-task-decomposition
+description: >-
+  골격(core + 워커 3개) 세우기와 "무한 대기 → bounded" 변경을 한 안건으로 요청. core가 워커를 import·인스턴스화하는 의존을 task 순서에 반영하는지, compose.py·core.py를 함께 건드리는 task를 병렬로 표시하지 않는지, 현재 동작을 고정한 test_characterization.py를 변경 task와 같이 묶는지를 잰다.
+tags: [plan, hard]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh

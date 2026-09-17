@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-untestable-seam
+description: >-
+  테스트 먼저 만들고 고쳐 달라는 요청인데 핸들러의 첫 인자(vendor Connection)가 실기기 없이는 인스턴스화 불가. 테스트 가능성 축을 열고 정리 시퀀스를 Connection 없이 호출 가능한 함수로 추출하는 seam task를 먼저 두는지, vendor/를 건드리지 않는지, red 불가면 라벨·대체 증거(실기기 로그)를 붙이는지를 잰다.
+tags: [plan, hard]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh

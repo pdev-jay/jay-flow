@@ -1,0 +1,122 @@
+{
+  "flow": "plan",
+  "runner": "claude plugin eval . --tag hard --scaffold --allow-tools Bash --ablation none --runs 3 -j 4 --model claude-sonnet-5 --judge-model sonnet --max-cost-usd 15 --no-publish --trust-plugin --json evals/results/<variant>.json",
+  "goal": {
+    "target": "score",
+    "direction": "higher",
+    "hold": [
+      "costUsd"
+    ]
+  },
+  "split": {
+    "train": [
+      "plan-backend-asymmetry",
+      "plan-proximate-stop",
+      "plan-stale-spec",
+      "plan-task-decomposition",
+      "plan-wide-refactor"
+    ],
+    "test": [
+      "plan-deferred-scope",
+      "plan-untestable-seam",
+      "plan-unverified-code-facts"
+    ],
+    "seed": 42
+  },
+  "harness_paths": [
+    "evals/",
+    "skills/plan/SKILL.md"
+  ],
+  "metrics": [
+    {
+      "id": "score",
+      "label": "score",
+      "kind": "continuous"
+    }
+  ],
+  "perf_fields": [
+    "costUsd",
+    "turns",
+    "durationSeconds"
+  ],
+  "approve_each_round": true,
+  "rounds": [
+    {
+      "name": "baseline",
+      "results": "evals/results/hard-baseline-fable-merged.json",
+      "train": 0.948,
+      "test": 0.864
+    },
+    {
+      "name": "v1",
+      "status": "keep",
+      "results": "evals/results/hard-v1-fable-merged.json",
+      "merged_from": [
+        "hard-v1-fable.json (backend-asymmetry·deferred-scope·proximate-stop, 중단 전 완료분)",
+        "hard-v1-fable-plan-*.json (나머지 5케이스, 케이스별 재실행)"
+      ],
+      "change": "evals/hillclimb/plan/v1/change.md",
+      "train": 0.931,
+      "test": 0.879,
+      "train_delta": -0.017,
+      "test_delta": 0.015,
+      "cost_per_run_test": {
+        "base": 1.24,
+        "v1": 1.25
+      },
+      "notes": [
+        "겨냥한 신호(wide-refactor w3 llm) 1/3 → 2/3. n=3라 약한 증거.",
+        "section grader(`##` 헤딩 6종) 동시 탈락 run이 base 2 → v1 4. 헤딩을 굵은 글씨로 쓴 형식 이탈이며 v1 변경과 무관한 노이즈. section 제외 시 train +0.028, test +0.017.",
+        "delta 전부 노이즈 범위. 결과 grader 총 가중치가 낮아 run 하나의 형식 이탈이 케이스 점수를 0.25 흔든다."
+      ]
+    },
+    {
+      "name": "sonnet-base",
+      "model": "claude-sonnet-5",
+      "skill_state": "v1",
+      "results": "evals/results/hard-sonnet-base.json",
+      "train": 0.84,
+      "test": 0.797,
+      "cost_suite": 12.26,
+      "notes": [
+        "w3 llm 루브릭 4/24 통과(Fable v1 19/24). 헤딩 형식 이탈 1 run(0.012). 감점 대부분이 내용 루브릭.",
+        "v2(헤딩 형식)는 Sonnet에서 기대 효과 ≤0.012 — 노이즈 이하. 측정 보류, eval 대상 모델 결정 대기."
+      ]
+    },
+    {
+      "name": "v2",
+      "status": "applied, 미측정",
+      "change": "evals/hillclimb/plan/v2/change.md",
+      "why_unmeasured": "Fable에선 형식 이탈이 주 노이즈지만 측정 1라운드 $38. Sonnet에선 이탈 1 run뿐이라 측정 불가. 스킬 결함 수정으로 근거가 독립적이라 측정 없이 적용."
+    }
+  ],
+  "runner_fable": "claude plugin eval . --tag hard --scaffold --allow-tools Bash --ablation none --runs 3 -j 4 --model claude-fable-5-1 --judge-model sonnet --no-publish --trust-plugin --json evals/results/<variant>.json",
+  "model_switch": {
+    "date": "2026-09-17",
+    "why": "Fable 라운드당 $38 → 비용. Sonnet으로 climb, 최종 keep 판정만 Fable 확인.",
+    "applied_state": "v1 적용된 SKILL.md"
+  },
+  "status": "closed 2026-09-17",
+  "closing": {
+    "final_skill_state": "v1 + v2",
+    "fable_scores": {
+      "baseline": {
+        "train": 0.948,
+        "test": 0.864
+      },
+      "v1": {
+        "train": 0.931,
+        "test": 0.879
+      }
+    },
+    "open_gaps": [
+      "plan-deferred-scope: 핵심 루브릭 0/3 (Fable·Sonnet 공통). test 세트라 이걸 보고 고치지 않음 — 재개 시 split 재조정 검토.",
+      "v2 효과 미측정."
+    ],
+    "lessons": [
+      "Sonnet 5는 이 스위트의 대리 모델로 부적합: 핵심 루브릭 4/24 vs Fable 19/24. 모델별 실패 양상이 다르다.",
+      "케이스당 3 run에서 헤딩 형식 이탈 run 하나가 케이스 점수를 0.25 흔든다 — delta 0.05 미만은 판정 불가.",
+      "재개 시 eval 모델은 plan을 실제로 돌리는 세션 모델과 맞춘다."
+    ]
+  }
+}

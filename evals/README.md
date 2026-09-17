@@ -100,3 +100,36 @@ claude plugin eval . --case plan-ledger --scaffold --allow-tools Bash --ablation
 - 이 fixture는 도구 출력이 12KB뿐이라 오라클 출력 절삭(builder 규칙 5)의 효과는 여기서 0이다. 실제 repo에서 `/cost` 전후로 잰다.
 
 결정(cost-optimize 2026-09-17): 적용 = eval 개발 run은 Sonnet(README 위), 오라클 출력 절삭(builder 규칙 5·build 6단계). skip = build 스킬 `effort: medium`(상한 ≈ build의 5~13%인데 sweep이 $6.6 — 회수에 build 30~60회, 그리고 이 fixture는 판정 품질 저하를 못 본다), plan 스킬 추가 절삭(품질 위험, 안전한 몫은 ~4%), builder 배칭(설계 변경, 실제 task 크기에서 재평가).
+
+## 어려운 plan 케이스 (2026-09-17, hillclimb용)
+
+실제 `.plans/` 이력 4개 저장소·31개 슬러그·`변경:` 58건을 분류해 가장 자주 뒤집힌 형태 8개를 자족형 fixture로 합성했다(태그 `hard`). 각 케이스는 llm 루브릭(w3) 하나가 핵심 신호이고, 나머지는 형식·경로 grader다.
+
+| 케이스 | 유도하는 실패 | 실제 근거 |
+|---|---|---|
+| plan-stale-spec | 옛 사양 사본으로 전제, 카운터가 루프를 못 끊는데 채택 | ble-pairing v5→v6, display v1→v2 |
+| plan-proximate-stop | 근인(RSSI 불안정)에서 멈추고 GPS fallback으로 점프 | gps-exit v1→v4 |
+| plan-backend-asymmetry | alpha 로그만 보고 공용 임계 — beta는 도달 불가 | ble-pairing v4·v7 |
+| plan-unverified-code-facts | grep 없이 "사용 중" 단언, legacy 테스트·config 누락 | speed-report v2·v3 |
+| plan-untestable-seam | seam 추출 대신 Connection 리플렉션 우회 | ble-pairing v2→v3 |
+| plan-wide-refactor | expand→migrate→contract 미분해, sample·wiring 누락 | slice4·5·6 |
+| plan-deferred-scope | "나중에"로 미룬 경로의 silent 성공을 방치 | multi-beacon v2 |
+| plan-task-decomposition | core가 워커보다 먼저, 공유 파일 병렬, characterization 충돌 | skeleton v2, slice2 v2 |
+
+프롬프트 공통 줄: "되물을 게 있으면 plan 초안을 먼저 전부 제시하고, 질문은 초안 아래에 권장 답과 함께" — 단일 턴 eval이라 질문만 하고 멈추면 채점이 불가능해서 넣었다.
+
+hillclimb 상태: `evals/hillclimb/plan/` (`_state.json`에 train/test 분할, seed 42). 판정은 test 3개의 delta.
+
+### hillclimb 결과 (2026-09-17 종료)
+
+| 라운드 | 변경 | train | test | 판정 |
+|---|---|---|---|---|
+| baseline | — | 0.948 | 0.864 | |
+| v1 | wide refactor 판정을 개수 → "동시 red" 기준 | 0.931 | 0.879 | keep (노이즈 범위, 겨냥 루브릭 1/3→2/3, 비용 동일) |
+| v2 | 제시 초안도 `##` 헤딩 | — | — | 미측정 적용 (스킬 결함 수정) |
+
+Fable 5.1, judge sonnet, 케이스당 3 run. 기록: `evals/hillclimb/plan/`.
+
+- **헤딩 형식 노이즈.** 초안을 굵은 글씨 헤딩으로 쓴 run은 section grader 6종을 한꺼번에 잃어 run 점수가 0.25 떨어진다. 케이스당 3 run에서 delta 0.05 미만은 판정 불가다. v2가 이 원인을 막는다.
+- **Sonnet 5는 이 스위트의 대리 모델로 못 쓴다.** 같은 스킬(v1)에서 w3 루브릭 통과가 Fable 19/24, Sonnet 4/24다. 실패 양상이 달라 Sonnet에서 다듬으면 Fable 개선이 안 된다. hard 스위트는 plan을 실제로 돌리는 세션 모델로 잰다. 라운드당 Fable $38, Sonnet $12.
+- **남은 약점.** plan-deferred-scope는 두 모델 모두 w3 0/3. test 세트라 이걸 보고 고치지 않았다 — 재개 시 split 재조정부터.

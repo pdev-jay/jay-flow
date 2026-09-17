@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-backend-asymmetry
+description: >-
+  같은 이름 신호(FAILED)가 두 백엔드에서 다른 빈도로 나오는 저장소. alpha 로그만 보고 공통 임계를 올리면 beta에선 cleanup에 절대 도달하지 못한다 — plan이 beta의 신호 의미를 실측해 두 백엔드 모두에서 성립하는 설계를 내는지 잰다.
+tags: [plan, hard]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh

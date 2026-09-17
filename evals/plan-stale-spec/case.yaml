@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-stale-spec
+description: >-
+  저장소에 날짜가 다른 기기 사양 사본이 둘(옛 사본은 인증 실패 후 재광고 없음·최대 페어 1, 최신본은 250ms 뒤 재광고·최대 페어 2). 옛 사본으로 전제를 세우고 "설계는 갈리지 않는다"로 넘기는지, 사용자의 "실패 2회 카운터" 제안을 최신 사양과 replay 출력에 근거해 판정하는지를 잰다.
+tags: [plan, hard]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh

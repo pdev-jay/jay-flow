@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: plan-wide-refactor
+description: >-
+  공개 Enum(Event) 멤버 추가 + 구 예외 타입(BleError)을 typed Failure 반환으로 전면 교체. wide refactor로 인식해 expand→migrate→contract로 쪼개는지, DIAGNOSTIC 추가가 exhaustive 분기 4곳을 동시에 깨는 것을 잡는지, contract 단계 파일 목록에 sample/과 test_wiring(비소유 소비자)을 넣는지를 잰다.
+tags: [plan, hard]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh
