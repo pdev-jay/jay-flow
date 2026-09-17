@@ -1,0 +1,16 @@
+{
+  "description": "jay-flow:build 호출 직전 베이스 신선도 게이트 — 로컬 HEAD가 upstream보다 뒤면 build를 차단한다.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/freshness-gate.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

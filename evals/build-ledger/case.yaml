@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: build-ledger
+description: 승인된 plan(task 3개, 공유분 1 + 독립분 2)을 build 스킬로 구현. 결과(오라클 green·파일·범위)와 경로(builder dispatch·체크포인트)를 나눠 잰다.
+tags: [build, cost]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh

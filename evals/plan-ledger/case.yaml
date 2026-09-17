@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: plan-ledger
+description: 수정류 안건으로 plan 스킬을 발화. red 증거를 실제로 실행했는지, 원인 사슬이 근인(report)에서 멈추지 않고 뿌리(parse/Entry 계약)까지 갔는지, 상시 5축·구조 관례·검증 표기·권장 답이 있는지, 승인 전 저장하지 않는지를 잰다.
+tags: [plan]
+plugins: ["../.."]
+context:
+  scaffold_script: fixture.sh

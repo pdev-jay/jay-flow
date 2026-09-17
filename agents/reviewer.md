@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: build 결과의 consolidated diff를 fresh context에서 검토하는 서브에이전트. jay-flow:review 3단계에서 호출 — 목적이 깨끗한 컨텍스트(구현·단순화 잔해 없음)이므로 모델은 세션 모델을 상속한다(sonnet 고정 금지 — builder와 다르다). 발견만 반환하는 advisory — 코드를 고치지 않는다.
+description: build 결과의 consolidated diff를 fresh context에서 검토하는 서브에이전트. jay-flow:review 3단계에서 호출 — 목적이 깨끗한 컨텍스트(구현·단순화 잔해 없음)이므로 모델을 지정하지 않고 세션 모델을 상속한다. 발견만 반환하는 advisory — 코드를 고치지 않는다.
 tools: Read, Grep, Glob, Bash
 ---
 
