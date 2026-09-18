@@ -16,13 +16,17 @@ CIDD 실측에서 살아남은 것만 남겼다:
 - **plan에서만 정할 수 있는 것과 나중에 싸게 고치는 것을 나눈다.** 불변식(타입으로 막나 런타임으로 막나)·에러 대응 정책(어디서 잡고 무엇을 하나)·결합 방향·경계는 **plan**이 정한다 — 나중에 통일하려면 전 호출부를 건드려야 한다. 지역 명명·함수 분해·추상화 층위는 **build의 단순화 pass**가 걷는다. "가독성"·"SOLID" 같은 판정 불가능한 라벨은 어느 축에도 넣지 않는다 — 형식적 한 줄로 채워지고 체크리스트 전체의 신뢰도를 떨어뜨린다.
 - **검증 바닥은 오라클.** test/type/build green이 완료 기준. 자기보고는 증거가 아니다. 고위험 표면(auth·schema·billing·concurrency·외부 I/O)은 변경 라인의 테스트 도달을 `닿음`/`닿지만 seam이 얕음`/`안 닿음` 세 값으로 확인 — 얕은 seam에 얹은 테스트는 거짓 확신이고, **올바른 seam이 없다는 것 자체가 발견**이다. 수정류는 plan 단계에서 진단을 **red 출력**으로 증명한다(서술된 재현 경로는 증거가 아니다).
 - **plan 재주입.** task마다 해당 plan slice를 다시 읽고 시작한다. (실측: 에이전트는 plan에서 표류하고, 주기적 재주입이 위반을 줄인다.)
+- **작고 가역적인 변경은 plan을 안 거친다(FAST).** 승인된 plan이 없을 때 `jay-flow:build`가 다섯 조건을 판정한다 — 고위험 표면 무접촉(auth·권한·schema/persistence·public API·billing·concurrency·외부 I/O) / `git revert` 하나로 되돌아감 / **오라클이 변경 라인에 닿음**(미배선이면 FAST 금지) / (수정류) 원인이 이미 확정 / 한 seam 안. **전부 참일 때만** FAST고 하나라도 거짓이면 plan이다 — 기본값은 plan이고, 판정 기준은 파일 수가 아니라 위험 표면이다(한 줄이어도 auth면 plan). FAST는 메인이 직접 수정 → 오라클 1회 → diff 보고로 끝난다. **빼는 건 사람 게이트 둘 중 앞쪽(plan 승인)뿐** — diff 자체가 계획인 크기라 승인 왕복을 안 붙이는 것이고, 사용자가 diff를 읽는 뒤쪽 게이트는 그대로다. **이탈 조건이 이 루트의 안전장치다**: 착수 후 다섯 중 하나라도 거짓으로 드러나면 그 자리에서 되돌리고 plan으로 올린다("거의 다 했으니 마저"가 없다). 사용자가 명시적으로 plan을 요청했으면 판정 자체를 하지 않는다.
 - **사람 게이트는 둘, 그 사이는 연속 주행.** plan 승인(앞)과 review 판정(뒤)만 사람이 멈춰 세우는 지점이다 — 승인에 진행 지시가 붙으면 build→review는 입력 대기 없이 이어진다(build 정지 조건 미green·plan 오류·고위험 미도달은 예외). cidd:auto식 풀 auto는 넣지 않는다 — 사용자가 마찰 소스라는 전제와 모순이고, 긴 자율 주행은 CIDD의 영역이다.
 - **상태는 최신 plan 파일 하나, 이력은 버전 파일로.** plan은 `.plans/<slug>/v1.md, v2.md…`로 쌓인다 — **내용 변경은 새 버전**(맨 위 `변경:` 한 줄, 이전 버전 수정 금지), **체크박스·status는 최신 버전에 in-place**(실행 상태는 버전 사유 아님). 유효본 = 최고 버전. 별도 state machine 없음. 부수 효과: review가 diff-plan 차이를 버전 이력과 대조해 "승인된 변경 vs 이탈"을 구분한다.
 
 ## 흐름
 
 ```
-대화 ──▶ plan (수정류는 red 증거부터 + 상시 5축 + 조건부 축 체크 + 사용자 수정 반복, 승인까지)
+대화 ──▶ [FAST 판정] 다섯 조건 전부 참 ──▶ 메인 직접 수정 → 오라클 1회 → diff 보고 (끝)
+              │ 하나라도 거짓 / 사용자가 plan을 요청 / 착수 후 이탈 조건
+              ▼
+         plan (수정류는 red 증거부터 + 상시 5축 + 조건부 축 체크 + 사용자 수정 반복, 승인까지)
               │ 승인 → task 분해 → .plans/<slug>/v1.md (내용 변경 시 v2, v3…)
               ▼
          build (베이스 신선도 확인 → 구현은 전부 builder(세션 모델·low effort): 공유분 순차 → 독립분 병렬(wide refactor는 expand→migrate→contract) →
@@ -40,7 +44,7 @@ CIDD 실측에서 살아남은 것만 남겼다:
 | 스킬 | 하는 일 |
 |---|---|
 | `jay-flow:plan` | 대화로 plan 완성(상시 5축 + 조건부 축 + 미해결·전제 + self-check + 사용자 반복), 승인 시 task 분해·저장(수정류는 진단을 red 출력으로 증명, wide refactor는 expand→migrate→contract로 분해) |
-| `jay-flow:build` | 베이스 신선도 게이트(hook이 `git fetch`, 뒤지면 호출 차단), 구현은 전부 `builder`(세션 모델·low effort) — 공유분 순차·독립분 병렬·wide refactor는 순서 고정, 오라클 green(캡 3, 초과 시 메인 에스컬레이션), 판정은 메인, task green마다 체크포인트 커밋, 통합 red는 귀속→repair 사다리, 전체 green 후 단순화 pass(동작·계약 불변) |
+| `jay-flow:build` | **FAST 판정**(승인된 plan이 없을 때 — 다섯 조건 전부 참이면 plan 없이 직접, 착수 후 이탈 조건이면 되돌리고 plan으로), 베이스 신선도 게이트(hook이 `git fetch`, 뒤지면 호출 차단), 구현은 전부 `builder`(세션 모델·low effort) — 공유분 순차·독립분 병렬·wide refactor는 순서 고정, 오라클 green(캡 3, 초과 시 메인 에스컬레이션), 판정은 메인, task green마다 체크포인트 커밋, 통합 red는 귀속→repair 사다리, 전체 green 후 단순화 pass(동작·계약 불변) |
 | `jay-flow:review` | 전체 오라클 → diff vs plan(+ 과거 `수정 지점` 이력 대조로 근인 수정 반복 탐지) → diff 자체 검토는 fresh-context `reviewer`(세션 모델) 위임, advisory 보고, accept 시 done |
 
 ## 설치
