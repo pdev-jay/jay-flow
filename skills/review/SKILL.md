@@ -27,4 +27,4 @@ description: build 결과를 plan과 대조해 리뷰한다. 전체 오라클 �
 
 4. **보고.** 발견을 심각도와 함께 나열 — advisory다, 머지 판정은 사용자. 근거 없는 발견은 만들지 않는다(없으면 없다고). build에서 자동 연결로 진입했어도 **여기서 멈춘다 — accept를 자동으로 하지 않는다**(review 판정이 뒤쪽 사람 게이트다).
 
-5. **done.** 사용자 accept 시 **최신 버전** plan 파일에 `status: done`. 남은 advisory 발견은 같은 파일 하단에 기록해 둔다(다음 작업의 씨앗). accept와 함께 **체크포인트 커밋 정리를 한 줄로 묻는다** — squash할지 그대로 둘지(build 규칙대로 squash는 사용자 몫, 임의로 하지 않는다).
+5. **done.** 사용자 accept 시 **최신 버전** plan 파일에 `status: done`. 이 plan을 기다리는 `on-hold` plan이 있으면(`grep -rln "on-hold — <이 plan slug>" .plans/`) 재개할 차례라고 한 줄로 알린다 — 재개는 그 plan의 새 버전이다. 남은 advisory 발견은 같은 파일 하단에 기록해 둔다(다음 작업의 씨앗). accept와 함께 **체크포인트 커밋 정리를 한 줄로 묻는다** — squash할지 그대로 둘지(build 규칙대로 squash는 사용자 몫, 임의로 하지 않는다).
