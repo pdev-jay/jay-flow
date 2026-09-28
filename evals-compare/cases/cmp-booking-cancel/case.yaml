@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: cmp-booking-cancel
+description: >-
+  동작하는 예약 서비스에 "취소" 기능 요청. 요청에 없는 load-bearing 결정(환불 정책 / 다항목 예약의 부분 취소 /
+  취소가 일으키는 대기자 자동 승격)을 사용자에게 드러내는지, 저장소로 알 수 있는 건 묻지 않는지 잰다. dryforge 홈그라운드.
+tags: [compare, feature]
+context:
+  scaffold_script: fixture.sh

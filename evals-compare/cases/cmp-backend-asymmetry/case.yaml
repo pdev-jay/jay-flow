@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: cmp-backend-asymmetry
+description: >-
+  evals/plan-backend-asymmetry의 fixture를 형식 중립 루브릭으로 재채점. alpha 로그만 보고 공통 임계를 올리면 beta는 cleanup에 도달하지 못한다는 걸 짚는지. jay-flow 홈그라운드(수정류).
+tags: [compare, fix]
+context:
+  scaffold_script: fixture.sh

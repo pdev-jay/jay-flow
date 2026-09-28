@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: cmp-proximate-stop
+description: >-
+  evals/plan-proximate-stop의 fixture를 형식 중립 루브릭으로 재채점. 사용자가 제안한 GPS fallback 대신 에피소드 종료 조건(뿌리)을 찾는지. jay-flow 홈그라운드(수정류).
+tags: [compare, fix]
+context:
+  scaffold_script: fixture.sh

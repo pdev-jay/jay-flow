@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: cmp-unverified-code-facts
+description: >-
+  evals/plan-unverified-code-facts의 fixture를 형식 중립 루브릭으로 재채점. legacy 테스트·모듈 등록을 실측으로 찾고, 사용자 전제(profile_cache 사용 중)를 정정하는지. 중립(기능 변경 + 코드 실측).
+tags: [compare, feature]
+context:
+  scaffold_script: fixture.sh
