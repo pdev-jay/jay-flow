@@ -12,6 +12,8 @@
 
 Feature는 로그인·러닝·기기·기록처럼 기능을 나누는 경계다. Layer는 각 기능 내부에서 책임을 나누는 기준이다.
 
+Feature와 Layer는 코드의 논리 경계다. 기본은 빌드 모듈 하나(앱 모듈, 앱 타깃) 안에서 폴더·패키지로 나눈다. 빌드 모듈(Gradle 모듈, SwiftPM 타깃)로 나누는 것은 §14의 빌드 모듈 분리 트리거가 참일 때만 한다.
+
 | 레이어 | 책임 | 예시 |
 |---|---|---|
 | Presentation | 입력 수집과 화면 표시 | Screen, UI 컴포넌트 |
@@ -40,7 +42,7 @@ App은 다음을 담당한다.
 
 외부 구현의 위치는 종류와 사용 범위로 정한다.
 
-- 기술 구현(HTTP 클라이언트, DB 연결, 위치, 시계, 여러 Feature가 쓰는 기기 자원 관리)은 계약과 구현을 공용 모듈(`core`)에 둔다.
+- 기술 구현(HTTP 클라이언트, DB 연결, 위치, 시계, 여러 Feature가 쓰는 기기 자원 관리)은 계약과 구현을 공용 영역(`core`)에 둔다.
 - 한 Feature만 쓰는 서버·기기 어댑터는 그 Feature의 Data에 둔다. 사용 범위가 넓어진 기술 구현은 `core`로 옮길 수 있다.
 - 업무 규칙과 업무 데이터(예: 러닝 기록 Repository)의 소유권은 여러 기능이 쓰더라도 해당 Feature에 남긴다. 다른 기능에는 공개 API나 읽기 계약으로 제공한다.
 
@@ -81,7 +83,7 @@ App은 모든 호출이 통과하는 중간 단계가 아니다. 프로필 조�
 
 입출력 계약은 사용하는 책임에 따라 Application 또는 Domain에 둔다. 앱 전체 공용 외부 구현의 계약은 `core`에 둔다(§2). 계약(인터페이스)은 §14의 트리거가 참일 때만 만든다.
 
-모듈 의존 방향은 `App → Feature`, `App → core`, `Feature → core`다. Feature끼리는 서로 참조하지 않고, App이 공개 API와 읽기 계약을 연결한다(§5, §11).
+의존 방향은 `App → Feature`, `App → core`, `Feature → core`다(폴더·패키지 기준이고, 빌드 모듈로 나눴으면 모듈 기준). Feature끼리는 서로 참조하지 않고, App이 공개 API와 읽기 계약을 연결한다(§5, §11).
 
 ## 5. Feature는 공개 계약을 통해 외부와 연결한다.
 
@@ -221,7 +223,7 @@ AppGraph 한 파일에 모든 내부 객체를 조립하지 않는다. Feature�
 | 여러 기능의 실행 순서 | 해당 Coordinator |
 | 구현 연결·생성 범위 | Component 또는 DI 모듈 |
 
-내부 구현은 접근 제한과 모듈 경계로 감춘다. 경계는 §15의 방법으로 확인한다.
+내부 구현은 Feature 안의 폴더·패키지에 두고 §15의 방법으로 밖에서 참조하지 못하게 한다. 빌드 모듈로 나눴으면 접근 제한(예: Kotlin `internal`)으로 감춘다.
 
 `ARCHITECTURE.md`에는 다음을 기록한다. 문서가 있으면 승인된 갱신(작업 계획의 문서 갱신 작업, 또는 리뷰 뒤의 반영 승인)으로 고친다. 없으면 이 항목을 작업 계획에 기록하고, 문서는 별도 승인을 받아 만든다. 문서가 없다는 것 자체는 위반이 아니다.
 
@@ -246,6 +248,7 @@ Controller나 Coordinator가 있는 Feature에는 책임·진입점·공개 API�
 | 공개 사실 스트림(Event) | 다른 Feature가 그 사실을 받아 작업을 해야 한다 | 상태 스트림만 |
 | Feature 분리 | 독립된 업무 규칙과 업무 데이터를 갖고 다른 Feature 없이 바뀔 수 있다, 또는 같은 단어가 다른 규칙으로 쓰인다 | 같은 Feature 안에서 객체를 나눈다. 수명만 다르면 Controller와 세션 객체로 나눈다 |
 | 영역 묶음 | Feature가 많아 탐색이 어렵다 | 묶지 않음 |
+| 빌드 모듈(타깃) 분리 | 플랫폼이나 선택한 배포 방식이 별도 타깃·모듈을 요구한다(예: iOS 위젯·공유 확장·알림 서비스 확장처럼 앱과 따로 실행되는 App Extension — Swift의 `extension` 문법이 아니다, Android dynamic feature, 여러 플랫폼이 공유하는 코드), 또는 다른 앱·저장소가 이 코드를 의존해야 한다, 또는 현재 검사로 막지 못한 같은 종류의 경계 위반이 리뷰에서 두 번 나왔다, 또는 여러 사람이 Feature를 나눠 맡아 같은 파일·빌드 설정 충돌이 반복된다. 빌드 시간은 근거가 아니다 — 작은 모듈이 많으면 모듈마다 설정·리소스 처리·코드 생성이 반복되어 오히려 느려진다. Feature 개수도 근거가 아니다 | 빌드 모듈 하나 안의 폴더·패키지로 두고 §15의 import 검사로 경계를 지킨다. 나눌 때도 트리거가 걸린 부분만 뗀다. 첫 분리는 보통 Feature가 아니라 여러 Feature가 쓰는 공유 자원 소유자(`core`)다 |
 
 ## 15. 규칙의 확인 방법
 
@@ -255,12 +258,16 @@ Controller나 Coordinator가 있는 Feature에는 책임·진입점·공개 API�
 
 강제 수단은 위반이 빌드나 테스트를 실패시키는 장치다. 보조 검사는 강제 수단으로 막지 못하는 부분을 grep으로 찾는다.
 
+빌드 모듈을 나누기 전(§14)에는 import 검사 테스트가 §4·§5·§9의 강제 수단이다. 테스트 러너에서 소스 파일을 읽어, 금지된 패키지 경로(예: `com.example.running.application.`)가 import 줄이나 코드 본문에 나오는지 찾는다. 패키지 선언 줄은 제외한다. 위반 주입은 금지된 import 한 줄과, import 없이 완전 수식 이름으로 참조하는 한 줄을 각각 넣어 둘 다 실패하는지 본다. 모듈을 나눈 부분은 빌드 도구의 모듈 의존성과 접근 제어로 옮긴다. 강제 수단을 세우려는 이유만으로 빌드 모듈을 나누지 않는다.
+
+언어마다 이 검사가 닿는 범위가 다르다. Kotlin·Java는 다른 패키지의 타입을 import나 완전 수식 이름으로만 쓸 수 있어서, 둘 다 찾으면 패키지 사이 참조를 대부분 잡는다. 사각지대는 같은 패키지 이름을 쓴 우회와 리플렉션이다. Swift는 같은 타깃 안의 타입을 import 없이 쓰므로 앱 코드 사이의 참조는 잡지 못한다. 시스템 프레임워크(`UIKit`, `SwiftUI`, `CoreBluetooth`, `CoreLocation`)는 직접 import한 파일만 검사된다. bridging header, `@_exported import`, 다른 파일의 import로 멤버가 보이는 경우는 사각지대다. 그래서 `@_exported import`는 금지 패턴에 넣고, 소유자 전용 프레임워크는 bridging header에 넣지 않으며, 원시 API 이름 검사(보조 검사)를 함께 건다. Swift 단일 타깃에서 강제할 수 없는 규칙은 plan에 `강제 수단 미적용: <규칙> — Swift 단일 타깃`으로 적고 리뷰로 확인한다.
+
 | 규칙 | 강제 수단 | 보조 검사 |
 |---|---|---|
-| §4 Domain은 UI·플랫폼·Data를 참조하지 않는다 | Domain 모듈의 허용 의존성을 표준 라이브러리와 필요한 계약으로 제한한다. 플랫폼 SDK, Presentation, Data 구현 모듈에 의존하면 빌드가 실패해야 한다. 플랫폼 API, UI 타입, Data 구현 참조를 각각 넣어 실패를 확인한다 | 모듈로 나누지 않았다면 Domain 경로에서 플랫폼 import(예: `android.`, `UIKit`, `SwiftUI`, `CoreBluetooth`)를 찾는 grep 테스트. 같은 컴파일 단위 안의 참조(예: 같은 Swift 타깃)처럼 import 없이 생기는 Data·Presentation 참조는 grep으로 잡지 못한다. 그런 참조를 검출할 수단이 없으면 Domain을 별도 모듈로 분리한다 |
-| §4 의존 방향 | 빌드 도구의 모듈 의존성(예: Gradle 모듈, SwiftPM 타깃). 역방향 import를 넣으면 빌드가 실패해야 한다 | 없음 |
-| §5 다른 Feature의 내부 참조 금지 | 언어의 접근 제어와 모듈 경계(예: Kotlin `internal`, Swift 타깃별 `internal`). Feature마다 별도 모듈로 두고 공개 API와 조립 진입점만 노출한다. 숨기려는 Feature 경계보다 넓게 열리는 접근 수준(예: Swift `package`는 같은 package의 다른 타깃에도 열린다)은 Feature 내부 은닉에 쓰지 않는다. App이 Feature 내부 Controller나 Repository 구현을 참조하면 빌드가 실패해야 한다 | 없음 |
-| §9 플랫폼 자원 API는 소유자만 | 플랫폼 SDK 의존을 소유자 모듈에만 둘 수 있으면 모듈 의존성 | 소유자 경로를 제외하고 원시 API를 찾는 grep 테스트. 범위는 repo 전체 |
+| §4 Domain은 UI·플랫폼·Data를 참조하지 않는다 | 빌드 모듈 하나: Domain 폴더의 파일에서 플랫폼(예: `android.`, `UIKit`, `SwiftUI`, `CoreBluetooth`), Presentation, Data 패키지 import를 찾는 import 검사 테스트. 모듈을 나눴으면 Domain 모듈의 허용 의존성을 표준 라이브러리와 필요한 계약으로 제한한다. 플랫폼 API, UI 타입, Data 구현 참조를 각각 넣어 실패를 확인한다 | Swift 단일 타깃에서는 Data·Presentation 타입 참조가 import 없이 생기므로 잡지 못한다. 플랫폼 프레임워크 import만 검사되고 나머지는 리뷰로 본다 |
+| §4 의존 방향 | 빌드 모듈 하나: 패키지 사이 import 검사 테스트(`core`가 위를 참조, Feature가 다른 Feature나 App을 참조하면 실패). 모듈을 나눴으면 빌드 도구의 모듈 의존성(예: Gradle 모듈, SwiftPM 타깃). 역방향 참조를 넣으면 실패해야 한다 | Swift 단일 타깃에서는 성립하지 않는다. 리뷰로 보고 `강제 수단 미적용`으로 적는다 |
+| §5 다른 Feature의 내부 참조 금지 | 빌드 모듈 하나: Feature 밖의 파일에서 그 Feature의 내부 폴더(예: `application`·`domain`·`data`) import를 찾는 import 검사 테스트. Feature를 빌드 모듈로 나눴으면 언어의 접근 제어(예: Kotlin `internal`, Swift 타깃별 `internal`)로 공개 API와 조립 진입점만 노출한다. 숨기려는 Feature 경계보다 넓게 열리는 접근 수준(예: Swift `package`는 같은 package의 다른 타깃에도 열린다)은 Feature 내부 은닉에 쓰지 않는다. App이 Feature 내부 Controller나 Repository 구현을 참조하면 실패해야 한다 | Swift 단일 타깃에서는 강제할 수 없다. 리뷰로 보고 `강제 수단 미적용`으로 적는다 |
+| §9 플랫폼 자원 API는 소유자만 | 플랫폼 프레임워크 경로(예: `android.bluetooth`, `CoreBluetooth`, `CoreLocation`)를 소유자 폴더 밖에서 찾는 import 검사 테스트. 소유자를 빌드 모듈로 나눠도 Android의 `android.bluetooth`처럼 플랫폼 SDK가 모든 모듈에 주어지면 모듈 의존성으로 막을 수 없으므로 이 검사를 유지한다. 서드파티 SDK처럼 의존을 그 모듈에만 둘 수 있을 때만 모듈 의존성으로 대신한다 | 원시 API 이름(예: `BluetoothLeScanner`, `CBCentralManager`)을 소유자 경로 밖에서 찾는 grep 테스트. Swift의 재수출·bridging header로 import 없이 보이는 경우를 잡는다. 범위는 repo 전체 |
 | §9 사용권 (둔 경우) | 테스트: A와 B가 사용 중일 때 A가 반환해도 B는 계속 동작한다. 실패·취소 경로에서도 반환된다 | 없음 |
 | §8 같은 소유자 | 테스트: 화면이 시작한 작업을 Coordinator가 종료하면 세션이 남지 않는다. 실행 중인 세션이 없을 때의 종료는 아무것도 만들지 않는다 | 없음 |
 | §3 후속 작업은 저장 뒤 | 테스트: fake 저장소가 실패하면 후속 작업 호출이 0회다. 실시간 경고는 fake 저장소가 멈춰 있어도 나간다 | 없음 |

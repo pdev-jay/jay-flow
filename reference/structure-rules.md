@@ -5,7 +5,7 @@
 이 규칙은 프로젝트의 `ARCHITECTURE.md`, 완료된 구조 plan, 실측한 기존 관례가 답하지 않는 곳에 적용한다. 그 셋과 다르면 그 셋이 우선한다. 단, 승인된 구조 plan이 목표 기준으로 이 규칙을 명시적으로 채택하면 그 plan의 범위에서는 이 규칙이 기준이다.
 
 ## 경계
-1. 코드는 Feature별로 모으고, Feature 안에서는 Presentation · Application · Domain · Data로 책임을 나눈다. 필요한 레이어만 둔다(§1, §14).
+1. 코드는 Feature별로 모으고, Feature 안에서는 Presentation · Application · Domain · Data로 책임을 나눈다. 필요한 레이어만 둔다. 나누는 단위는 폴더·패키지이고, 빌드 모듈 분리는 §14 트리거가 참일 때만 한다(§1, §14).
 2. 의존 방향은 `App → Feature`, `App → core`, `Feature → core`뿐이다. Feature끼리, core에서 위로는 참조하지 않는다(§2, §4).
 3. Domain은 UI·플랫폼 API·Data 구현을 참조하지 않는다(§4).
 4. Feature는 작은 공개 API로만 밖과 닿는다. 다른 Feature의 상태가 필요하면 소비하는 쪽이 읽기 계약을 정하고 App이 연결한다(§5, §11).
