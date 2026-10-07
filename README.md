@@ -43,7 +43,7 @@ CIDD 실측에서 살아남은 것만 남겼다:
                 오라클 green → 메인이 drift 판정, 막히면 메인 에스컬레이션
                 → 전체 green 후 단순화 pass: 우발적 복잡도 제거, 동작·계약 불변)
               ▼
-         review (오라클 → diff vs plan → 잠재 에러 재검 → advisory)
+         review (오라클 → diff vs plan → 잠재 에러 재검 → 재현된 상·중 결함 1라운드 수정 → advisory)
               │ 사용자 accept
               ▼
             done (plan status: done)
@@ -55,7 +55,7 @@ CIDD 실측에서 살아남은 것만 남겼다:
 |---|---|
 | `jay-flow:plan` | 대화로 plan 완성(상시 5축 + 조건부 축 + 미해결·전제 + self-check + 사용자 반복), 승인 시 task 분해·저장(task는 기능 단위, 여러 plan 위임은 roadmap, 수정류는 진단을 red 출력으로 증명, 기능류는 기존 동작과의 충돌 지점을 `(정책)` 질문으로, wide refactor는 expand→migrate→contract로 분해) |
 | `jay-flow:build` | **FAST 판정**(승인된 plan이 없을 때 — 다섯 조건 전부 참이면 plan 없이 직접, 착수 후 이탈 조건이면 되돌리고 plan으로), 베이스 신선도 게이트(hook이 `git fetch`, 뒤지면 호출 차단), 구현은 전부 `builder`(세션 모델·low effort) — 공유분 순차·독립분 병렬·wide refactor는 순서 고정, 오라클 green(캡 3, 초과 시 메인 에스컬레이션), 판정은 메인, task green마다 체크포인트 커밋, 통합 red는 귀속→repair 사다리, 전체 green 후 단순화 pass(동작·계약 불변) |
-| `jay-flow:review` | 전체 오라클(같은 입력이면 build 결과 재사용) → diff vs 최신 plan(+ 과거 `수정 지점` 이력 대조로 근인 수정 반복 탐지) → diff 자체 검토는 fresh-context `reviewer`(세션 모델, 전후 트리 지문 확인, 고위험이면 위험 패턴 카탈로그) 위임, advisory 보고 + 학습 제안, 리뷰 후 바뀐 범위는 재리뷰, accept 시 done |
+| `jay-flow:review` | 전체 오라클(같은 입력이면 build 결과 재사용) → diff vs 최신 plan(+ 과거 `수정 지점` 이력 대조로 근인 수정 반복 탐지) → diff 자체 검토는 fresh-context `reviewer`(세션 모델, 전후 트리 지문 확인, 고위험이면 위험 패턴 카탈로그) 위임, 재현된 상·중 결함은 builder로 1라운드 수정·커밋·바뀐 범위 재리뷰(재현 안 됨·하·구조 변경·수정 방법 선택 필요는 보고만), advisory 보고 + 학습 제안, 리뷰 후 바뀐 범위는 재리뷰, accept 시 done |
 
 ## 설치
 
